@@ -1,0 +1,6 @@
+{
+  "username": "emerson",
+  "password": "validPassword",
+  "email": "emerson.souza@ensolvers.com",
+  "invalidEmail": "email@withoutdotcom"
+}
