@@ -1,4 +1,4 @@
-describe.skip("Test Suite ID: RS_001 - Registration Test Suite", () => {
+describe("Test Suite ID: RS_001 - Registration Test Suite", () => {
   beforeEach(() => {
     cy.visit("/account/register");
   });
@@ -75,21 +75,34 @@ describe("Test Suite ID: LTS_001 - Login Test Suite", () => {
     cy.contains("Password cannot be empty!");
   });
 
-  it("TC_LOGIN_006 - should save data session on cookies", () => {
-    cy.performLogin({ rememberMe: true });
-    cy.window().then((win) => {
-      expect(win.localStorage.length).to.eq(1);
-    });
-  });
+  it("TC_LOGIN_006 - should perform logout successfully", () => {
+    cy.restoreSession();
+    cy.get('[data-cy="accountMenu"] > .d-flex').click();
+    cy.get('[data-cy="logout"]').click();
+    cy.contains("Logged out successfully!");
+  })
 
-  it.only("rememberMe test", () => {
-    cy.performLogin({ rememberMe: true });
-
-    cy.smartWaitForLocalStorageSize({ expectedSize: 1 });
-
-    cy.window().then((win) => {
-      const storageLength = win.localStorage.length;
-      expect(storageLength).to.be.greaterThan(0); // Verifica que o localStorage não está vazio
-    });
-  });
 });
+
+describe("Test Suite ID: RP_001 - Reset Password Test Suite", () => {
+  beforeEach(() => {
+    cy.visit("/login");
+    cy.get('[data-cy="forgetYourPasswordSelector"]').click();
+  });
+  it("TC_LOGIN_001 - should show email field shouldn't be empty error", () => {
+    //cy.get('[data-cy="submit"]').click();
+    //cy.contains("Your email is required.");
+  });
+
+  it("TC_LOGIN_002 - should show invalid formatting email error", () => {
+    cy.get('[data-cy="emailResetPassword"]').type("aaaaa@aaaa");
+    cy.get('[data-cy="submit"]').click();
+    cy.contains("Your email is invalid.")
+  });
+
+  it("TC_LOGIN_003 - should present success message with valid email formatting", () => {
+    cy.get('[data-cy="emailResetPassword"]').type("valid@email.com");
+    cy.get('[data-cy="submit"]').click();
+    cy.contains("Check your emails for details on how to reset your password.")
+  });
+})

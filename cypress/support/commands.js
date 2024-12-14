@@ -9,6 +9,7 @@ Cypress.Commands.add(
     const finalUsername = username || defaultUsername;
     const finalPassword = password || defaultPassword;
 
+    cy.visit("/")
     cy.get("#username").type(finalUsername);
     cy.get("#password").type(finalPassword);
 
@@ -24,13 +25,12 @@ Cypress.Commands.add(
   "fillDefaultRegistrationData",
   ({ username, email, firstPassword, secondPassword } = {}) => {
     cy.fixture("userData").then((userData) => {
-      // Usa os dados da fixture ou os valores passados no parâmetro
+      //If the parameter is declared it will be overwritten
       const finalUsername = username || userData.username;
       const finalFirstPassword = firstPassword || userData.password;
       const finalSecondPassword = secondPassword || userData.password;
       const finalEmail = email || userData.email;
 
-      // Preenche os campos do formulário
       cy.get('[data-cy="username"]').type(finalUsername, { delay: 0 });
       cy.get('[data-cy="email"]').type(finalEmail, { delay: 0 });
       cy.get('[data-cy="firstPassword"]').type(finalFirstPassword, {
@@ -44,12 +44,49 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add(
-  "smartWaitForLocalStorageSize",
-  (expectedSize, timeout = 5000) => {
-    cy.window({ timeout }).should((win) => {
-      const storageLength = win.localStorage.length;
-      expect(storageLength).to.be.greaterThan(expectedSize - 1); // Verifica se o tamanho é maior ou igual ao esperado
-    });
-  }
-);
+
+Cypress.Commands.add('restoreSession', () => {
+  cy.window().then((window) => {
+    const existingToken = Cypress.env('jhi-authenticationToken');
+
+    // Checks if there is an existing token and it's not empty
+    if (existingToken && existingToken !== '') {
+      window.sessionStorage.setItem('jhi-authenticationToken', existingToken);
+      return;
+
+    } else {
+      // Get session storage variable value and sets as sessionStorage on browser application
+      const userToken = Cypress.env('jhi-authenticationToken');
+      window.sessionStorage.setItem('jhi-authenticationToken', userToken);
+
+      if (userToken && userToken !== '') {
+        // If userToken exists and isnt empty should inject token value on the browser
+        window.sessionStorage.setItem('jhi-authenticationToken', userToken);
+        console.log('Token injetado no sessionStorage');
+
+      } else {
+        // If there's no content on the browser and declared on cypress environment should perform login and save the session storage value
+        cy.performLogin();
+
+        //Wait value to be present on broser session storage
+        cy.wait(1500);
+
+        // Save session storage value
+        cy.saveSessionStorage("jhi-authenticationToken");
+      }
+    }
+  });
+});
+
+Cypress.Commands.add('saveSessionStorage', (key) => {
+  cy.window().then((window) => {
+    // Gets session value on cypress variable
+    const value = window.sessionStorage.getItem(key);
+
+    if (value) {
+      Cypress.env(key, value);
+    } else {
+      cy.log(`${key} not found on sessionStorage`);
+    }
+  });
+});
