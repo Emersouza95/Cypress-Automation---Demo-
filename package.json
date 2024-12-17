@@ -1,0 +1,19 @@
+{
+  "name": "ensolvers",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "cypress:interface": "npx cypress open",
+    "cypress:headless": "npx cypress run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "cypress": "^13.16.1"
+  },
+  "dependencies": {
+    "cypress-dotenv": "^2.0.0"
+  }
+}
